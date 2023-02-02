@@ -1,0 +1,18 @@
+version: '3.7'
+services:
+  gmp:
+    build:
+      context: .
+    command: >
+      uvicorn main:app --reload --workers 1 --host 0.0.0.0 --port 9011
+    ports:
+      - 9011:9011
+    volumes:
+      - ./src:/app
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - 8092:80
+    depends_on:
+      - gmp

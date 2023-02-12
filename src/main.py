@@ -11,9 +11,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-import keras
-
-print(keras.__version__, "-------------------------------")
 
 
 @app.post("/predict")

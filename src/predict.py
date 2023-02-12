@@ -1,7 +1,6 @@
 import joblib
 import numpy as np
 import os
-import pandas as pd
 from helper import get_pgx_pred, get_sa_pred
 
 

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class Prediction(BaseModel):
     Mw: float
-    Rjb: float
+    Rrup: float
     VS30: float
     fault_type: str
     period: float

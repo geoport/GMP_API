@@ -16,12 +16,12 @@ pipelines = {
 }
 
 
-def predict_response_spectrum(Mw, Rjb, VS30, fault_type):
+def predict_response_spectrum(Mw, Rrup, VS30, fault_type):
     periods = np.arange(0.02, 10.02, 0.02)
     periods = np.arange(0.02, 1, 0.02)
     spectral_accelerations = []
     pipeline = pipelines["SA"]
-    spectral_accelerations = get_sa_pred(pipeline, Mw, Rjb, VS30, fault_type, periods)
+    spectral_accelerations = get_sa_pred(pipeline, Mw, Rrup, VS30, fault_type, periods)
 
     return {
         "periods": periods.tolist(),
@@ -31,7 +31,7 @@ def predict_response_spectrum(Mw, Rjb, VS30, fault_type):
 
 def predict_gmpe(prediction_data):
     Mw = prediction_data.Mw
-    Rjb = np.log10(prediction_data.Rjb)
+    Rrup = np.log10(prediction_data.Rrup)
     VS30 = np.log10(prediction_data.VS30)
     fault_type = prediction_data.fault_type
     data_type = prediction_data.data_type
@@ -39,12 +39,12 @@ def predict_gmpe(prediction_data):
 
     if data_type in ["PGA", "PGV", "PGD"]:
         pipeline = pipelines[data_type]
-        output = get_pgx_pred(pipeline, Mw, Rjb, VS30, fault_type, data_type)
+        output = get_pgx_pred(pipeline, Mw, Rrup, VS30, fault_type, data_type)
         return {data_type: output}
     elif data_type == "SA":
         pipeline = pipelines["SA"]
-        output = get_sa_pred(pipeline, Mw, Rjb, VS30, fault_type, [period])[-1]
+        output = get_sa_pred(pipeline, Mw, Rrup, VS30, fault_type, [period])[-1]
         return {"spectral_acceleration": output}
     elif data_type == "RS":
-        output = predict_response_spectrum(Mw, Rjb, VS30, fault_type)
+        output = predict_response_spectrum(Mw, Rrup, VS30, fault_type)
         return output

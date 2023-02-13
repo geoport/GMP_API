@@ -12,8 +12,8 @@ class PgxPipeline:
     def __init__(self, target_col, data_frame) -> None:
         self.df = data_frame
         self.target_col = target_col
-        self.num_cols = ["MW", "Rjb", "VS30", target_col]
-        self.log_cols = ["Rjb", "VS30", target_col]
+        self.num_cols = ["MW", "Rrup", "VS30", target_col]
+        self.log_cols = ["Rrup", "VS30", target_col]
         self.cat_cols = ["FaultType"]
 
     def log_func(self, X):
@@ -42,8 +42,8 @@ class PgxPipeline:
 class SpectralAccelerationPipeline:
     def __init__(self, data_frame) -> None:
         self.df = data_frame
-        self.num_cols = ["Mw", "Rjb", "VS30", "Period", "SRSS"]
-        self.log_cols = ["Rjb", "VS30", "SRSS"]
+        self.num_cols = ["Mw", "Rrup", "VS30", "Period", "SRSS"]
+        self.log_cols = ["Rrup", "VS30", "SRSS"]
         self.cat_cols = ["FaultType"]
 
     def log_func(self, X):
@@ -91,10 +91,10 @@ class KerasTransformer(BaseEstimator, TransformerMixin):
         return self.model.predict(X)
 
 
-def get_pgx_pred(pipeline, Mw, Rjb, VS30, fault_type, target_col):
+def get_pgx_pred(pipeline, Mw, Rrup, VS30, fault_type, target_col):
     df = pd.DataFrame(
-        [[Mw, fault_type, Rjb, VS30, 1]],
-        columns=["MW", "FaultType", "Rjb", "VS30", target_col],
+        [[Mw, fault_type, Rrup, VS30, 1]],
+        columns=["MW", "FaultType", "Rrup", "VS30", target_col],
     )
     pred_scaled = pipeline.predict(df)
     scaler = (
@@ -104,11 +104,11 @@ def get_pgx_pred(pipeline, Mw, Rjb, VS30, fault_type, target_col):
     return 10**pred
 
 
-def get_sa_pred(pipeline, Mw, Rjb, VS30, fault_type, periods):
-    dataset = [[Mw, fault_type, Rjb, VS30, period, 1] for period in periods]
+def get_sa_pred(pipeline, Mw, Rrup, VS30, fault_type, periods):
+    dataset = [[Mw, fault_type, Rrup, VS30, period, 1] for period in periods]
     df = pd.DataFrame(
         dataset,
-        columns=["Mw", "FaultType", "Rjb", "VS30", "Period", "SRSS"],
+        columns=["Mw", "FaultType", "Rrup", "VS30", "Period", "SRSS"],
     )
     pred_scaled = pipeline.predict(df).flatten()
 

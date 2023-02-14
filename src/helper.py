@@ -42,8 +42,8 @@ class PgxPipeline:
 class SpectralAccelerationPipeline:
     def __init__(self, data_frame) -> None:
         self.df = data_frame
-        self.num_cols = ["Mw", "Rrup", "VS30", "Period", "SRSS"]
-        self.log_cols = ["Rrup", "VS30", "SRSS"]
+        self.num_cols = ["Mw", "Rrup", "VS30", "Period", "SA"]
+        self.log_cols = ["Rrup", "VS30", "SA"]
         self.cat_cols = ["FaultType"]
 
     def log_func(self, X):
@@ -104,16 +104,19 @@ def get_pgx_pred(pipeline, Mw, Rrup, VS30, fault_type, target_col):
     return 10**pred
 
 
-def get_sa_pred(pipeline, Mw, Rrup, VS30, fault_type, periods):
+def get_sa_pred(process_pipeline, tf_model, Mw, Rrup, VS30, fault_type, periods):
     dataset = [[Mw, fault_type, Rrup, VS30, period, 1] for period in periods]
     df = pd.DataFrame(
         dataset,
-        columns=["Mw", "FaultType", "Rrup", "VS30", "Period", "SRSS"],
+        columns=["MW", "FaultType", "Rrup", "VS30", "Period", "SA"],
     )
-    pred_scaled = pipeline.predict(df).flatten()
+    df_scaled = process_pipeline.transform(df)
+    pred_scaled = tf_model.predict(df_scaled).flatten()
 
     scaler = (
-        pipeline.named_steps["preprocess"].named_steps["col_trans"].transformers_[0][1]
+        process_pipeline.named_steps["preprocess"]
+        .named_steps["col_trans"]
+        .transformers_[0][1]
     )
     pred = scaler.inverse_transform([[1, 1, 1, 1, sa] for sa in pred_scaled])[:, -1]
 

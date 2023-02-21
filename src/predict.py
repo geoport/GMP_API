@@ -2,7 +2,6 @@ import joblib
 import numpy as np
 import os
 from helper import get_pgx_pred, get_sa_pred
-import tensorflow as tf
 
 
 def load_model(file_name):
@@ -14,22 +13,18 @@ pipelines = {
     "PGV": load_model("pgv_pipeline"),
     "PGD": load_model("pgd_pipeline"),
     "SA_process": load_model("sa_pipeline"),
-    "SA": tf.keras.models.load_model("models/SA.h5"),
 }
 
 
-def predict_response_spectrum(Mw, Rrup, VS30, fault_type):
-    periods = np.arange(0.02, 10.02, 0.02)
-    spectral_accelerations = []
-    process_pipeline = pipelines["SA_process"]
-    tf_model = pipelines["SA"]
-    spectral_accelerations = get_sa_pred(
-        process_pipeline, tf_model, Mw, Rrup, VS30, fault_type, periods
-    )
+def predict_response_spectrum(process_pipeline, Mw, Rrup, VS30, fault_type):
+    periods = np.arange(0.04, 10.04, 0.04)
+    spectral_accelerations = [
+        get_sa_pred(process_pipeline, Mw, Rrup, VS30, fault_type, p) for p in periods
+    ]
 
     return {
         "periods": periods.tolist(),
-        "spectral_accelerations": spectral_accelerations.tolist(),
+        "spectral_accelerations": spectral_accelerations,
     }
 
 
@@ -47,11 +42,9 @@ def predict_gmpe(prediction_data):
         return {data_type: output}
     elif data_type == "SA":
         process_pipeline = pipelines["SA_process"]
-        tf_model = pipelines["SA"]
-        output = get_sa_pred(
-            process_pipeline, tf_model, Mw, Rrup, VS30, fault_type, [period]
-        )[-1]
+        output = get_sa_pred(process_pipeline, Mw, Rrup, VS30, fault_type, period)
         return {"spectral_acceleration": output}
     elif data_type == "RS":
-        output = predict_response_spectrum(Mw, Rrup, VS30, fault_type)
+        process_pipeline = pipelines["SA_process"]
+        output = predict_response_spectrum(process_pipeline, Mw, Rrup, VS30, fault_type)
         return output
